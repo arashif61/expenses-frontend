@@ -1,0 +1,19 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    restart: always
+    volumes:
+      # NGINXのコンフィグファイルをホストOSから、ゲストOSに連結する
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      # NGINXのWebアプリ（index.html等）をホストOSから、ゲストOSに連結する
+      - ./dist:/usr/share/nginx/html
+    networks:
+      - expenses-network
+
+networks:
+  expenses-network:
+    name: expenses-backend-network
+    external: true
