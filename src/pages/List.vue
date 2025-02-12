@@ -8,19 +8,20 @@ import CategoryRow from "../interface/CategoryRow";
 const loading = ref(true);
 const createDialog = ref(false);
 const selectedRow: Ref<DepositWithdrawalRow | null> = ref(null);
+const balance = ref(0);
 
 (async () => {
   console.log("Before create");
 })();
 
 const columns: QTableColumn<DepositWithdrawalRow>[] = [
-  { name: 'categoryId', label: '', field: 'categoryId', align: 'left' },
   {
     name: 'date', align: 'left', label: '日付', field: 'date', format: (val: string | number | Date) => new Date(val).toLocaleDateString("ja-JP", {
       year: "numeric", month: "2-digit",
       day: "2-digit"
     })
   },
+  { name: 'categoryId', label: '', field: 'categoryId', align: 'left', style: "max-width: 34px;" },
   {
     name: 'content', align: 'left', label: '内容', field: 'content', format: (val: string) => val == "" ? "（未確定）" : val,
     style: "max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
@@ -33,6 +34,13 @@ const options: Ref<CategoryRow[]> = ref([]);
 
 const initialPagination = {
   rowsPerPage: 100
+}
+
+const getDepositWithdrawalList = async (yearMonth: string) => {
+  const result = await axios.get(`/api/v1/depositWithdrawal?date=${yearMonth}`);
+  depositWithdrawalList.value = result.data.list;
+  const balanceResult = await axios.get("/api/v1/balance");
+  balance.value = balanceResult.data.balance;
 }
 
 const searchContent = ref("");
@@ -60,11 +68,9 @@ onMounted(async () => {
   loading.value = true;
 
   console.log("mounted");
-
-  const result = await axios.get(`/api/v1/depositWithdrawal?date=${new Date().toLocaleDateString("ja-JP", {
+  getDepositWithdrawalList(new Date().toLocaleDateString("ja-JP", {
     year: "numeric", month: "2-digit"
-  }).replaceAll('/', '-')}`);
-  depositWithdrawalList.value = result.data.list;
+  }).replaceAll('/', '-'));
   const resultYearMonths = await axios.get(`/api/v1/yearMonth`);
   yearMonthList.value = resultYearMonths.data.yearMonthList;
   selectedYearMonth.value = resultYearMonths.data.yearMonthList[0];
@@ -76,8 +82,7 @@ onMounted(async () => {
 });
 
 watch(selectedYearMonth, async (newYearMonth) => {
-  const result = await axios.get(`/api/v1/depositWithdrawal?date=${newYearMonth.id}`);
-  depositWithdrawalList.value = result.data.list;
+  getDepositWithdrawalList(newYearMonth.id);
 });
 
 const onCategoryChange = async (row: any, newCategoryId: any) => {
@@ -88,6 +93,8 @@ const onCategoryChange = async (row: any, newCategoryId: any) => {
     amount: depositWithdrawalList.value[index].amount,
     categoryId: newCategoryId
   });
+
+  getDepositWithdrawalList(selectedYearMonth.value.id);
 };
 
 const getOption = (categoryId: number): { id: number | bigint, color: string, icon: string, name: string } => {
@@ -113,7 +120,7 @@ const setDate = (date: string | undefined) => {
 
 <template>
   <div class="row justify-between">
-    <!-- <div><span class="text-h4">入出金情報</span></div> -->
+    <div><span class="text-h5">残高: ¥{{ balance.toLocaleString() }}</span></div>
     <div class="row"><q-select borderless v-model="selectedYearMonth" :options="yearMonthList" option-label="label"
         option-value="id" label="年月" class="q-mr-lg" />
       <q-input borderless dense debounce="300" v-model="searchContent" placeholder="内容">
@@ -126,18 +133,17 @@ const setDate = (date: string | undefined) => {
   <div>
     <q-table v-if="!loading" flat bordered dense :rows="depositWithdrawalList" :columns="columns" row-key="id"
       :pagination="initialPagination" :filter="filter" :filter-method="filteringData">
-
       <template v-slot:body-cell-categoryId="props">
         <q-td :props="props">
-          <q-chip clickable @click="setDialogCreate(props.row)" text-color="white"
+          <q-avatar @click="setDialogCreate(props.row)" round size="sm" text-color="white"
             :color="getOption(props.row.categoryId).color" :icon="getOption(props.row.categoryId).icon">
-          </q-chip>
+          </q-avatar>
         </q-td>
       </template>
     </q-table>
   </div>
 
-  <q-dialog v-model="createDialog" persistent>
+  <q-dialog v-model="createDialog">
     <q-card>
       <q-card-section class="row items-center q-pb-none">
         <div class="text-h6">カテゴリ変更</div>

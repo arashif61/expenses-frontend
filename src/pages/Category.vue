@@ -69,6 +69,14 @@ const okay = async () => {
   await getCategoryList();
 }
 
+const deleteCategory = async () => {
+  const confirmResult = confirm('削除しますか？')
+  if (confirmResult) {
+    await axios.delete(`/api/v1/category/${inputId.value}`)
+    await getCategoryList();
+  }
+}
+
 const inputId: Ref<bigint | number | null> = ref(null);
 const inputName = ref("");
 const selectedColor = ref("");
@@ -129,8 +137,7 @@ const setDialogEdit = async (id: bigint | number) => {
         <div class="q-mt-sm">
           <div>アイコン</div>
           <span v-for="icon in iconList">
-            <q-chip clickable text-color="black" :selected="selectedIcon === icon"
-              @click="selectIcon(icon)">
+            <q-chip clickable text-color="black" :selected="selectedIcon === icon" @click="selectIcon(icon)">
               <q-icon :name="icon" />
             </q-chip>
           </span>
@@ -148,6 +155,7 @@ const setDialogEdit = async (id: bigint | number) => {
       <q-card-actions align="right">
         <q-btn flat label="OK" color="primary" v-close-popup @click="okay" />
         <q-btn flat label="キャンセル" color="secondary" v-close-popup />
+        <q-btn flat color="negative" v-close-popup @click="deleteCategory"><q-icon name="delete" /></q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
