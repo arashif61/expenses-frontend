@@ -16,14 +16,14 @@ const balance = ref(0);
 
 const columns: QTableColumn<DepositWithdrawalRow>[] = [
   {
-    name: 'date', align: 'left', label: '日付', field: 'date', format: (val: string | number | Date) => new Date(val).toLocaleDateString("ja-JP", {
-      year: "numeric", month: "2-digit",
+    name: 'date', align: 'left', label: '日付', field: 'date',
+    format: (val: string | number | Date) => new Date(val).toLocaleDateString("ja-JP", {
       day: "2-digit"
     })
   },
   { name: 'categoryId', label: '', field: 'categoryId', align: 'left', style: "max-width: 34px;" },
   {
-    name: 'content', align: 'left', label: '内容', field: 'content', format: (val: string) => val == "" ? "（未確定）" : val,
+    name: 'content', align: 'left', label: '内容', field: 'content',
     style: "max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
   },
   { name: 'amount', align: 'right', label: '金額', field: 'amount', format: (val: number) => val.toLocaleString() },
