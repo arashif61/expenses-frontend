@@ -123,9 +123,9 @@ const setDate = (date: string | undefined) => {
     <div><span class="text-h5">残高: ¥{{ balance.toLocaleString() }}</span></div>
     <div class="row"><q-select borderless v-model="selectedYearMonth" :options="yearMonthList" option-label="label"
         option-value="id" label="年月" class="q-mr-lg" />
-      <q-input borderless dense debounce="300" v-model="searchContent" placeholder="内容">
+      <q-input dense debounce="300" v-model="searchContent" placeholder="内容">
         <template v-slot:append>
-          <q-icon name="search" />
+          <q-icon name="close" @click="searchContent = ''" class="cursor-pointer" />
         </template>
       </q-input>
     </div>
