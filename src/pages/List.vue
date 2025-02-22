@@ -8,7 +8,7 @@ import CategoryRow from "../interface/CategoryRow";
 const loading = ref(true);
 const createDialog = ref(false);
 const selectedRow: Ref<DepositWithdrawalRow | null> = ref(null);
-const balance = ref(0);
+const balance: Ref<number> = ref(0);
 
 (async () => {
   console.log("Before create");
@@ -18,7 +18,7 @@ const columns: QTableColumn<DepositWithdrawalRow>[] = [
   {
     name: 'date', align: 'left', label: '日付', field: 'date',
     format: (val: string | number | Date) => new Date(val).toLocaleDateString("ja-JP", {
-      day: "2-digit"
+      day: "numeric"
     })
   },
   { name: 'categoryId', label: '', field: 'categoryId', align: 'left', style: "max-width: 34px;" },
@@ -120,7 +120,9 @@ const setDate = (date: string | undefined) => {
 
 <template>
   <div class="row justify-between">
-    <div><span class="text-h5">残高: ¥{{ balance.toLocaleString() }}</span></div>
+    <div v-if="!loading">
+      <span class="text-h5">残高: ¥{{ balance.toLocaleString() }}</span>
+    </div>
     <div class="row"><q-select borderless v-model="selectedYearMonth" :options="yearMonthList" option-label="label"
         option-value="id" label="年月" class="q-mr-lg" />
       <q-input dense debounce="300" v-model="searchContent" placeholder="内容">
